@@ -1,8 +1,11 @@
+import {useState} from 'react';
 import { Refine } from "@pankod/refine-core";
 import {
     notificationProvider,
     Layout,
+    ConfigProvider,
     ErrorComponent,
+    theme,
 } from "@pankod/refine-antd";
 import routerProvider from "@pankod/refine-react-router-v6";
 import { dataProvider } from "@pankod/refine-supabase";
@@ -17,8 +20,24 @@ import { Dashboard } from "./pages/dashboard";
 import { Login } from "./pages/login";
 import { Signup } from "./pages/signup";
 
-function App() {
+interface HeaderProps {
+    theme: "light" | "dark";
+    setTheme: (theme: "light" | "dark") => void;
+}
+import Header from 'components/Header'
+
+
+const App:React.FC = () => {
+    const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("dark");
     return (
+        <ConfigProvider
+        theme={{
+            algorithm:
+                currentTheme === "light"
+                    ? theme.defaultAlgorithm
+                    : theme.darkAlgorithm,
+        }}
+    >
         <Refine
             dataProvider={dataProvider(supabaseClient)}
             authProvider={authProvider}
@@ -33,6 +52,9 @@ function App() {
                     },
                 ] as typeof routerProvider.routes,
             }}
+            Header={() => (
+                <Header theme={currentTheme} setTheme={setCurrentTheme} />
+            )}
             resources={[
                 {
                     name: "users",
@@ -50,6 +72,7 @@ function App() {
             Layout={Layout}
             catchAll={<ErrorComponent />}
         />
+        </ConfigProvider>
     );
 }
 
